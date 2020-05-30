@@ -5,7 +5,7 @@ from sql_queries import copy_table_queries, insert_table_queries
 
 def load_staging_tables(cur, conn):
     '''
-    Load analytics tables (Redshift) from staging tables (Redshift).
+    Load staging tables into Redshift from data stored in S3; use queries defined in sql_queries.py file.
     '''    
     for query in copy_table_queries:
         cur.execute(query)
@@ -14,7 +14,7 @@ def load_staging_tables(cur, conn):
 
 def insert_tables(cur, conn):
     '''
-    Insert data into staging tables in Redshift.
+    Insert data from staging tables in Redshift into analytic tables in Redshift.
     '''   
     for query in insert_table_queries:
         cur.execute(query)
@@ -23,7 +23,7 @@ def insert_tables(cur, conn):
 
 def main():
     '''
-    Connect to Redshift cluster. Load staging tables, insert data into staging tables in Redshift.
+    Connect to Redshift cluster. Load staging tables, insert data into analytic tables in Redshift.
     '''
     config = configparser.ConfigParser()
     config.read('dwh.cfg')
