@@ -114,22 +114,24 @@ time_table_create = ("""
 
 # STAGING TABLES
 
-staging_events_copy = ("""COPY staging_events FROM 's3://udacity-dend/log_data/'
-credentials 'aws_iam_role={}'
-json 's3://udacity-dend/log_json_path.json';
-""").format(config.get('IAM_ROLE', 'ARN'))
+staging_events_copy = ("""
+    COPY staging_events FROM {data_bucket}
+    credentials 'aws_iam_role={iam_arn}'
+    JSON {log_json_path};
+""").format(data_bucket=config['S3']['LOG_DATA'], iam_arn=config['IAM_ROLE']['ARN'], log_json_path=config['S3']['LOG_JSONPATH'])
+# Formatting for milliseconds: https://docs.aws.amazon.com/redshift/latest/dg/r_FORMAT_strings.html
 
-staging_songs_copy = ("""COPY staging_songs FROM 's3://udacity-dend/song_data/'
-credentials 'aws_iam_role={}'
-json 'auto';
-""").format(config.get('IAM_ROLE', 'ARN'))
+staging_songs_copy = ("""
+    COPY staging_songs FROM {data_bucket}
+    credentials 'aws_iam_role={iam_arn}'
+    JSON 'auto' truncatecolumns;
+""").format(data_bucket=config['S3']['SONG_DATA'], iam_arn=config['IAM_ROLE']['ARN'])
 
 # FINAL TABLES
 
-
 songplay_table_insert = ("""
     INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
-    SELECT DISTINCT TIMESTAMP 'epoch' + e.ts/1000 * INTERVAL '1 second'      AS start_time,
+    SELECT DISTINCT TIMESTAMP 'epoch' + e.ts/1000 * INTERVAL '1 second' AS start_time,
            e.userId             AS user_id,
            e.level              AS level,
            s.song_id            AS song_id,
@@ -141,7 +143,7 @@ songplay_table_insert = ("""
          staging_events e
     JOIN staging_songs s
         ON (e.song=s.title AND e.artist=s.artist_name)
-    WHERE e.page == 'NextSong';   
+    WHERE e.page = 'NextSong';   
 """)
 
 user_table_insert = ("""
@@ -150,10 +152,10 @@ user_table_insert = ("""
            firstName          AS first_name,
            lastName           AS last_name,
            gender             AS gender,
-           level              AS level,
+           level              AS level
     FROM
         staging_events
-    WHERE page =='NextSong';
+    WHERE page ='NextSong';
 """)
 
 song_table_insert = ("""
@@ -169,10 +171,10 @@ song_table_insert = ("""
 artist_table_insert = ("""
     INSERT INTO artists (artist_id, name, location, latitude, longitude)
     SELECT DISTINCT artist_id,
-           name,
-           location,
-           latitude,
-           longitude
+           artist_name,
+           artist_location,
+           artist_latitude,
+           artist_longitude
     FROM staging_songs;
 """)
 
@@ -189,9 +191,39 @@ time_table_insert = ("""
         songplays; 
 """)
 
+# Analytics - get counts of each table
+staging_events_count = ("""
+    SELECT COUNT(*) FROM staging_events;
+""")
+
+staging_songs_count = ("""
+    SELECT COUNT(*) FROM staging_songs;
+""")
+
+songplays_count = ("""
+    SELECT COUNT(*) FROM songplays;
+""")
+
+users_count = ("""
+    SELECT COUNT(*) FROM users;
+""")
+
+songs_count = ("""
+    SELECT COUNT(*) FROM songs;
+""")
+
+artists_count = ("""
+    SELECT COUNT(*) FROM artists;
+""")
+
+time_count = ("""
+    SELECT COUNT(*) FROM time;
+""")
+
 # QUERY LISTS
 
 create_table_queries = [staging_events_table_create, staging_songs_table_create, user_table_create, song_table_create, artist_table_create, songplay_table_create, time_table_create]
 drop_table_queries = [staging_events_table_drop, staging_songs_table_drop, songplay_table_drop, user_table_drop, song_table_drop, artist_table_drop, time_table_drop]
 copy_table_queries = [staging_events_copy, staging_songs_copy]
 insert_table_queries = [songplay_table_insert, user_table_insert, song_table_insert, artist_table_insert, time_table_insert]
+table_count_queries = [staging_events_count, staging_songs_count, songplays_count, users_count, songs_count, artists_count, time_count]

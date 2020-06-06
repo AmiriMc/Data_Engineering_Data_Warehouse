@@ -8,3 +8,6 @@ __pycache__/
 dwh.cfg
 dwh_REFERENCE.cfg
 
+drop_tables.py
+Sandbox.ipynb
+
