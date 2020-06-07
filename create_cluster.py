@@ -1,10 +1,18 @@
 # Create Redshift cluster using AWS Python SDK
 # Infrastructure-as-code
 
+# Imports
+import pandas as pd
+import boto3
+import json
+
 # Load DWH Params from a file
 import configparser
 config = configparser.ConfigParser()
 config.read_file(open('dwh.cfg'))
+
+#config = configparser.ConfigParser()
+#config.read('dwh.cfg')
 
 KEY                    = config.get('AWS','KEY')
 SECRET                 = config.get('AWS','SECRET')
@@ -121,4 +129,4 @@ def prettyRedshiftProps(props):
 myClusterProps = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
 prettyRedshiftProps(myClusterProps)
 
-print('Wait for the Cluster Status to become "available" before running sql_queries.py or etl.py. Go to the AWS Redshift console to monitor the cluster status.')
+print('**IMPORTANT... Wait for the Cluster Status to become "available" before running sql_queries.py or etl.py. Go to the AWS Redshift console to monitor the Cluster Status.**')
