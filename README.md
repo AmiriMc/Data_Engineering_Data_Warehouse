@@ -61,7 +61,7 @@ DWH_PORT=5439
 
 ## Schema Design for the Database
 
-The __Star schema__ design was used to create this database. The design includes 1 Fact table (songplays) and 4 Dimension tables (users, songs, artists, and time). The _sql_queries.py_ file contains all of the PostgreSQL queries such as `CREATE TABLE` , `DROP table IF EXISTS` , `INSERT INTO` , `copy` and `SELECT`. The _create_tables.py_ file is used to create the sparkifydb database, and all of the required tables that are defined in the _sql_queries.py_ script.
+The __Star schema__ design was used to create this database. The design includes 1 Fact table (songplays) and 4 Dimension tables (users, songs, artists, and time) and 2 staging tables (staging events and staging_songs). The _sql_queries.py_ file contains all of the PostgreSQL queries such as `CREATE TABLE` , `DROP table IF EXISTS` , `INSERT INTO` , `copy` and `SELECT` required to create the tables, including the staging tables. The _create_tables.py_ file is used to create the sparkifydb database, and all of the required tables that are defined in the _sql_queries.py_ script. The _etl.py_ script loads the staging tables and then inserts the data from the staging tables into the final analytical tables. The two staging tables are created first in Redshift. The final analytical tables are also created in Redshift.
 
 ![](https://github.com/AmiriMc/Data_Engineering_Data_Warehouse/blob/master/StarSchema.png?raw=t)
 
