@@ -78,7 +78,7 @@ Some useful example queries:
 * Get total number of artists in the `artists` table: `SELECT COUNT(*) FROM artists;`
 * Get total number of rows in the `time` table: `SELECT COUNT(*) FROM time;`
 
-These queries can be ran in three different ways; 1) command line interface (CLI), 2) from within a Jupyter Notebook, or 3) directly in the Redshift console, using the Query editor.
+These queries can be ran in three different ways: 1) command line interface (CLI), 2) from within a Jupyter Notebook, or 3) directly in the Redshift console, using the Query editor.
 
 ## Query Results
 
