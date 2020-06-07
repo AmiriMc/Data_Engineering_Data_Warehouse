@@ -14,23 +14,80 @@ The goal of this project was to use AWS and Python to build an ETL pipeline for 
 
 ### To run the Python scripts, follow instructions below:
 
-1. Configure the `dwh.cfg` file with your AWS Redshift configured user name `DB_USER`, password `DB_PASSWORD`, host `HOST`, database name `DB_NAME`, port `DB_PORT`, and Amazon Resource Name `ARN`.
-1. In a terminal, run the command `python create_tables.py` to run the create_tables.py script. This sets up the database, staging tables and the analytical tables in Redshift.
-2. In a terminal, run the command `python etl.py` to run the etl.py script. This extracts the data from 
+1. Configure the `dwh.cfg` file with your AWS Redshift configured user name `DB_USER`, password `DB_PASSWORD`, host `HOST`, database name `DB_NAME`, port `DB_PORT`, and Amazon Resource Name `ARN`. See "Configure dwh.cfg file" section below.
+1. In a terminal*, run the command `python create_cluster.py` to run the create_cluster.py script. This sets up the Redshift connection along with all necessary permissions. Before proceeding to the next steps, go to AWS Redshift Clusters and wait for the dwhcluster Cluster Status to read "available."
+2. In a terminal*, run the command `python create_tables.py` to run the create_tables.py script. This sets up the database, staging tables and the analytical tables in Redshift.
+2. In a terminal*, run the command `python etl.py` to run the etl.py script. This loads the staging tables and then creates the final analytic tables.
+2. In a terminal*, run the command `python analytics.py` to run the analytics.py script. This loads the staging tables and then creates the final analytic tables.
 3. Check whether or not all of the results of the queries match the expected results.
 4. Be sure to delete the cluster on Redshift; otherwise you will continue to be billed.
+
+&ast; Alternatively, you can run these scripts directly in a Jupyter Notebook using the format: `! python my_script.py`.
+
+## Configure dwh.cfg file
+Fill in missing fields.
+```
+[CLUSTER]
+HOST= ''
+DB_NAME=''
+DB_USER=''
+DB_PASSWORD=''
+DB_PORT=5439
+
+[IAM_ROLE]
+ARN=
+
+[S3]
+LOG_DATA='s3://udacity-dend/log_data/'
+LOG_JSONPATH='s3://udacity-dend/log_json_path.json'
+SONG_DATA='s3://udacity-dend/song_data/'
+
+[AWS]
+KEY= 
+SECRET= 
+
+[DWH] 
+DWH_CLUSTER_TYPE=multi-node
+DWH_NUM_NODES=4
+DWH_NODE_TYPE=dc2.large
+
+DWH_IAM_ROLE_NAME=dwhRole
+DWH_CLUSTER_IDENTIFIER=dwhCluster
+DWH_DB=dwh
+DWH_DB_USER=dwhadmin
+DWH_DB_PASSWORD=Passw0rd
+DWH_PORT=5439
+```
 
 ## Schema Design for the Database
 
 The __Star schema__ design was used to create this database. The design includes 1 Fact table (songplays) and 4 Dimension tables (users, songs, artists, and time). The _sql_queries.py_ file contains all of the PostgreSQL queries such as `CREATE TABLE` , `DROP table IF EXISTS` , `INSERT INTO` , `copy` and `SELECT`. The _create_tables.py_ file is used to create the sparkifydb database, and all of the required tables that are defined in the _sql_queries.py_ script.
 
-![](https://github.com/AmiriMc/Data_Engineering_Data_Modeling_with_Postgres/blob/master/StarSchema.png?raw=t)
+![](https://github.com/AmiriMc/Data_Engineering_Data_Warehouse/blob/master/StarSchema.png?raw=t)
 
 ## ETL Pipeline
 The _etl.py_ script sets up the ETL pipeline. ETL (Extract, Transform, and Load) methods were used to populate the _songs_ and _artists_ tables from the data within the JSON song files (`data/song_data/`) and to populate the _users_ and _time_ tables from the JSON log files (`data/log_data/`). A `SELECT` query gathers the `song_id` and `artist_id` information based on the title, artist name, and song duration from the log file.
 
 ## Example Queries
-Some useful example queries tested in Jupyter:
-* Get total number of users: `SELECT COUNT(user_id) FROM users`
-* Get total number of female 'F' (or male 'M') users: `SELECT COUNT(gender) FROM users WHERE gender = 'F'`
-* Get year of oldest/newest ('MIN' or 'MAX') activity : `SELECT MIN(year) FROM time`
+Some useful example queries:
+* Get total number of rows in the `staging_events` table: `SELECT COUNT(*) FROM staging_events;`
+* Get total number of rows in the `staging_songs` table: `SELECT COUNT(*) FROM staging_songs;`
+* Get total number of rows in the `songplays` table: `SELECT COUNT(*) FROM songplays;`
+* Get total number of rows in the `users` table: `SELECT COUNT(*) FROM users;`
+* Get total number of songs in the `songs` table: `SELECT COUNT(*) FROM songs;`
+* Get total number of artists in the `artists` table: `SELECT COUNT(*) FROM artists;`
+* Get total number of rows in the `time` table: `SELECT COUNT(*) FROM time;`
+
+These queries can be ran in three different ways; 1) command line interface (CLI), 2) from within a Jupyter Notebook, or 3) directly in the Redshift console, using the Query editor.
+
+## Query Results
+
+| Table            | Number of Rows |
+|---               | --:            |
+| staging_events   | 8056           |
+| staging_songs    | 14,896         |
+| songplays        | 333            |
+| users            | 104            |
+| songs            | 14,896         |
+| artists          | 10,025         |
+| time             | 333            |
